@@ -41,7 +41,7 @@ int main()
 
     //Push to the repository and pause
 
-    fprintf(cmd, "git push -u origin master\n");
+    fprintf(cmd, "git push -u origin main\n");
     fprintf(cmd, "pause");
 
 	_pclose(cmd);
