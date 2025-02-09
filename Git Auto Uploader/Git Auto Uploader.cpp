@@ -44,5 +44,7 @@ int main()
     fprintf(cmd, "git push -u origin master\n");
     fprintf(cmd, "pause");
 
+	_pclose(cmd);
+
     return 0;
 }
