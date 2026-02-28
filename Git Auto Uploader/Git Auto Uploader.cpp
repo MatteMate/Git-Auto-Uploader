@@ -34,17 +34,17 @@ int main() {
     }
 
     // Git initialization and adding files to the repository (ignoring .vs and x64 folders)
-    if (fprintf(cmd, "git init\n") < 0) {
+    if (fprintf(cmd, "if not exist .git\\ (git init)\n") < 0) {
         perror("Failed to write to command processor");
         _pclose(cmd);
         return 1;
     }
-    if (fprintf(cmd, "echo .vs/ >> %s\\.gitignore\n", dir) < 0) {
+    if (fprintf(cmd, "if exist .gitignore (findstr /x /c:\".vs/\" .gitignore >nul || echo .vs/>>.gitignore) else (echo .vs/>.gitignore)\n") < 0) {
         perror("Failed to write to command processor");
         _pclose(cmd);
         return 1;
     }
-    if (fprintf(cmd, "echo x64/ >> %s\\.gitignore\n", dir) < 0) {
+    if (fprintf(cmd, "if exist .gitignore (findstr /x /c:\"x64/\" .gitignore >nul || echo x64/>>.gitignore) else (echo x64/>>.gitignore)\n") < 0) {
         perror("Failed to write to command processor");
         _pclose(cmd);
         return 1;
@@ -81,14 +81,14 @@ int main() {
     }
     remote[strlen(remote) - 1] = '\0'; // Remove newline character
 
-    if (fprintf(cmd, "git remote add origin %s\n", remote) < 0) {
+    if (fprintf(cmd, "git remote get-url origin >nul 2>nul || git remote add origin %s\n", remote) < 0) {
         perror("Failed to write to command processor");
         _pclose(cmd);
         return 1;
     }
 
     // Push to the repository
-    if (fprintf(cmd, "git push -u origin main\n") < 0) {
+    if (fprintf(cmd, "git push -u origin HEAD\n") < 0) {
         perror("Failed to write to command processor");
         _pclose(cmd);
         return 1;
