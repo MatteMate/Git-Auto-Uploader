@@ -20,6 +20,15 @@ int trim_newline(char* text) {
     return len > 0;
 }
 
+int has_unsafe_shell_chars(const char* text) {
+    return strpbrk(text, "\"&|<>^") != NULL;
+}
+
+int is_valid_remote_url(const char* remote) {
+    return strncmp(remote, "https://github.com/", 19) == 0 ||
+           strncmp(remote, "git@github.com:", 15) == 0;
+}
+
 int main() {
     // Open a pipe to the command processor
     FILE* cmd = _popen("cmd", "w");
@@ -40,6 +49,11 @@ int main() {
     }
     if (!trim_newline(dir)) {
         fprintf(stderr, "Path cannot be empty.\n");
+        _pclose(cmd);
+        return 1;
+    }
+    if (has_unsafe_shell_chars(dir)) {
+        fprintf(stderr, "Path contains unsafe shell characters.\n");
         _pclose(cmd);
         return 1;
     }
@@ -86,6 +100,11 @@ int main() {
         _pclose(cmd);
         return 1;
     }
+    if (has_unsafe_shell_chars(commit)) {
+        fprintf(stderr, "Commit message contains unsafe shell characters.\n");
+        _pclose(cmd);
+        return 1;
+    }
 
     if (fprintf(cmd, "git commit -m \"%s\"\n", commit) < 0) {
         perror("Failed to write to command processor");
@@ -103,6 +122,16 @@ int main() {
     }
     if (!trim_newline(remote)) {
         fprintf(stderr, "Remote URL cannot be empty.\n");
+        _pclose(cmd);
+        return 1;
+    }
+    if (has_unsafe_shell_chars(remote)) {
+        fprintf(stderr, "Remote URL contains unsafe shell characters.\n");
+        _pclose(cmd);
+        return 1;
+    }
+    if (!is_valid_remote_url(remote)) {
+        fprintf(stderr, "Remote URL must be a GitHub URL (https://github.com/... or git@github.com:...).\n");
         _pclose(cmd);
         return 1;
     }
